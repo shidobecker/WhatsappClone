@@ -1,6 +1,7 @@
 package com.apollogit.shido.whatsappclone
 
 import android.os.Bundle
+import android.support.design.widget.Snackbar
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.widget.Toast
@@ -23,48 +24,29 @@ class MainActivity : AppCompatActivity() {
 
         auth = FirebaseAuth.getInstance()
 
-        auth.signInWithEmailAndPassword("goku@super.com", "goku22")
-                .addOnCompleteListener { task: Task<AuthResult> ->
-                    if(task.isSuccessful){
-                        //Sign in was successful
-                        Log.e("Success", "Success")
-                        Toast.makeText(this@MainActivity, "Signed In Successful", Toast.LENGTH_LONG).show()
-                        currentUser = task.result.user
-                    }else{
-                        Log.e("Error", task.exception?.localizedMessage)
-                        Toast.makeText(this@MainActivity, "Signed In Error", Toast.LENGTH_LONG).show()
-                    }
-                }
+        setupLoginButton()
 
-      /*  // Write a message to the database
-        val database = FirebaseDatabase.getInstance()
-        val dbReference = database.getReference("messages").push()
+    }
 
-        dbReference.setValue(Employee(
-                "Jam2es Bond",
-                "Spy",
-                10,
-                "England")
-        )
+    private fun setupLoginButton() {
+        loginButton.setOnClickListener {
 
-        //Read from DB
-        *//*     dbReference.onDataChange { dataSnapshot ->
-                 val value = dataSnapshot?.value as HashMap<String, Any>
-                 hello_world.text = value["name"].toString()
+            if(email.text.isEmpty() || password.text.isEmpty())
+                return@setOnClickListener
 
+            val email = email.text.toString().trim()
+            val password = password.text.toString().trim()
 
-             }*//*
-
-        hello_world.setOnClickListener {
-            val employee = Employee(
-                    "James Bond",
-                    "Spy",
-                    10,
-                    "England")
-
-            dbReference.setValue(employee)
-
-        }*/
+            auth.createUserWithEmailAndPassword(email, password)
+                    .addOnCompleteListener(this, { task: Task<AuthResult> ->
+                        if (task.isSuccessful) {
+                            val user: FirebaseUser = checkNotNull(auth.currentUser)
+                            Log.d("User:", user.email)
+                        } else {
+                            Snackbar.make(rootLayout, task.exception.toString(), Snackbar.LENGTH_SHORT)
+                        }
+                    })
+        }
     }
 
 
@@ -75,7 +57,7 @@ class MainActivity : AppCompatActivity() {
         if (currentUser != null) {
             Toast.makeText(this, "User is ${currentUser?.email}", Toast.LENGTH_SHORT).show()
         } else {
-           // Toast.makeText(this, "User Logged Out", Toast.LENGTH_SHORT).show()
+            // Toast.makeText(this, "User Logged Out", Toast.LENGTH_SHORT).show()
         }
         //Call a function to update the userInterface with current user
     }
